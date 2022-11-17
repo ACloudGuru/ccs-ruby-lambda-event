@@ -1,0 +1,29 @@
+service: lambda-event-demo
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: ruby2.7
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: "events:*"
+          Resource: "*"
+
+plugins:
+  - serverless-ruby-layer
+
+package:
+  patterns:
+    - "!bin"
+    - "!spec"
+    - "!yarn.lock"
+
+functions:
+  producer:
+    handler: producer.handler
+  consumer:
+    handler: consumer.handler
+    events:
+      - sqs: ${cf:lambda-events-demo-dev.DemoQueueArn}

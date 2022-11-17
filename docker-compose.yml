@@ -1,0 +1,6 @@
+services:
+  installer:
+    build: .
+    volumes:
+      - ./:/app
+      - ~/.aws:/root/.aws

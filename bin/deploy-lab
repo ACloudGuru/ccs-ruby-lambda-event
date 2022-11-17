@@ -1,0 +1,6 @@
+#!/bin/bash
+
+aws cloudformation create-stack \
+  --stack-name lambda-event-lab \
+  --template-body file:///$PWD/template.yml \
+  --capabilities CAPABILITY_NAMED_IAM
