@@ -21,12 +21,6 @@ Resources:
           - SubnetConfig
           - VPC
           - CIDR
-      Tags:
-        - Key: Application
-          Value:
-            Ref: AWS::StackName
-        - Key: Network
-          Value: Public
 
   PublicSubnet:
     Type: AWS::EC2::Subnet
@@ -43,22 +37,9 @@ Resources:
           - SubnetConfig
           - Public
           - CIDR
-      Tags:
-        - Key: Application
-          Value:
-            Ref: AWS::StackName
-        - Key: Network
-          Value: Public
 
   InternetGateway:
     Type: AWS::EC2::InternetGateway
-    Properties:
-      Tags:
-        - Key: Application
-          Value:
-            Ref: AWS::StackName
-        - Key: Network
-          Value: Public
 
   GatewayToInternet:
     Type: AWS::EC2::VPCGatewayAttachment
@@ -73,12 +54,6 @@ Resources:
     Properties:
       VpcId:
         Ref: VPC
-      Tags:
-        - Key: Application
-          Value:
-            Ref: AWS::StackName
-        - Key: Network
-          Value: Public
 
   PublicRoute:
     Type: AWS::EC2::Route
@@ -103,12 +78,6 @@ Resources:
     Properties:
       VpcId:
         Ref: VPC
-      Tags:
-        - Key: Application
-          Value:
-            Ref: AWS::StackName
-        - Key: Network
-          Value: Public
 
   InboundHTTPPublicNetworkAclEntry:
     Type: AWS::EC2::NetworkAclEntry
@@ -222,39 +191,48 @@ Resources:
     Properties:
       InstanceType: t3.micro
       ImageId: "ami-0b0dcb5067f052a63"
-      IamInstanceProfile: !ref InstanceProfile
+      IamInstanceProfile: !Ref InstanceProfile
+      KeyName: jamesmbp
       UserData:
         Fn::Base64:
           Fn::Join:
             - "\n"
             - - "#!/bin/bash"
-              - echo 'cloud_user:%abcd12345%' | chpasswd
-              - yum update -y
-              - yum install -y git-core zlib zlib-devel gcc-c++ patch readline readline-devel libyaml-devel libffi-devel openssl-devel make bzip2 autoconf automake libtool bison curl sqlite-devel
+              - sudo yum update -y
+              - sudo yum install -y git-core zlib zlib-devel gcc-c++ patch readline readline-devel libyaml-devel libffi-devel openssl-devel make bzip2 autoconf automake libtool bison curl sqlite-devel
               - git clone https://github.com/rbenv/rbenv.git ~/.rbenv
               - echo 'export PATH="$HOME/.rbenv/bin:$PATH"' >> ~/.bashrc
               - echo 'eval "$(rbenv init -)"' >> ~/.bashrc
+              - source ~/.bashrc
               - git clone https://github.com/rbenv/ruby-build.git ~/.rbenv/plugins/ruby-build
               - echo 'export PATH="$HOME/.rbenv/plugins/ruby-build/bin:$PATH"' >> ~/.bashrc
-              - /root/.rbenv/bin/rbenv install 2.7.0
-              - /root/.rbenv/bin/rbenv global 2.7.0
-              - curl --silent --location https://rpm.nodesource.com/setup_16.x | bash -
-              - yum -y install nodejs
+              - source ~/.bashrc
+              - ~/.rbenv/bin/rbenv install 2.7.0
+              - ~/.rbenv/bin/rbenv global 2.7.0
+              - sudo curl --silent --location https://rpm.nodesource.com/setup_16.x | sudo bash -
+              - sudo yum -y install nodejs
+              - sudo npm i -g yarn
               - git clone https://github.com/ACloudGuru/ccs-ruby-lambda-event.git
-              - npm i -g yarn
+              - cd ccs-ruby-lambda-event
               - yarn install
               - APP_ENV=dev yarn cdk deploy --require-approval=never
+              - gem install bundler:2.3.12
               - yarn sls deploy -s dev
-              - echo 'setup done.' > /home/cloud_user/status
-              - chown cloud_user:cloud_user /home/cloud_user/status
+              - echo 'setup done.' > ~/status
       NetworkInterfaces:
         - GroupSet:
             - Ref: EC2SecurityGroup
-          AssociatePublicIpAddress: "true"
+          AssociatePublicIpAddress: true
           DeviceIndex: "0"
           DeleteOnTermination: "true"
-          SubnetId:
-            Ref: PublicSubnet
+          SubnetId: !Ref PublicSubnet
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeType: gp2
+            VolumeSize: "30"
+            DeleteOnTermination: "true"
+            Encrypted: "true"
 
   EC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
