@@ -7,6 +7,6 @@ const appEnv = process.env.APP_ENV;
 
 const app = new cdk.App();
 new EventsStack(app, "EventsStack", {
-  stackName: `lambda-events-demo-${appEnv}`,
+  stackName: `lambda-events-demo-resources-${appEnv}`,
   appEnv,
 });
