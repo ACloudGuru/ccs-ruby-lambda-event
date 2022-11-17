@@ -26,4 +26,4 @@ functions:
   consumer:
     handler: consumer.handler
     events:
-      - sqs: ${cf:lambda-events-demo-dev.DemoQueueArn}
+      - sqs: ${cf:lambda-events-demo-resources-dev.DemoQueueArn}
