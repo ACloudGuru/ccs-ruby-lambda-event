@@ -213,6 +213,7 @@ Resources:
               - git clone https://github.com/ACloudGuru/ccs-ruby-lambda-event.git
               - cd ccs-ruby-lambda-event
               - yarn install
+              - APP_ENV=dev yarn cdk boostrap
               - APP_ENV=dev yarn cdk deploy --require-approval=never
               - gem install bundler:2.3.12
               - yarn sls deploy -s dev
